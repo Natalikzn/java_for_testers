@@ -1,12 +1,19 @@
 package ru.stqa.geometry.figures;
 
 public record Rectangle(double a, double b) {
-    public static void printRectangleArea(double a, double b) {
-        var text = String.format("Площадь прямоугольника со сторонами %f и %f = %f", a, b, rectangleArea(a, b));
+
+    public Rectangle {
+        if (a < 0 || b < 0) {
+            throw new IllegalArgumentException("Сторона прямоугольника не может быть отрицательной");
+        }
+    }
+
+    public static void printRectangleArea(Rectangle r) {
+        String text = String.format("Площадь прямоугольника со сторонами %f и %f = %f", r.a, r.b, r.rectangleArea());
         System.out.println(text);
     }
 
-    private static double rectangleArea(double a, double b) {
-        return a*b;
+    public double rectangleArea() {
+        return this.a * this.b;
     }
 }

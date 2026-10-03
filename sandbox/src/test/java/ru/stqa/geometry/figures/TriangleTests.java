@@ -14,10 +14,29 @@ public class TriangleTests {
     }
 
     @Test
-    void canCalculatePerimetr() {
+    void canCalculatePerimeter() {
         Assertions.assertEquals(12.0, new Triangle(3.0, 4.0, 5.0).trianglePerimeter());
+    }
+
+    @Test
+    void cannotCreateTriangleWithNegativeSide() {
+        try {
+            new Triangle(-3.0, 4.0, 5.0);
+            Assertions.fail();
+        } catch (IllegalArgumentException exception) {
+            //Ок
+        }
+    }
 
 
+    @Test
+    void triangleInequality() {
+        try {
+            new Triangle(1.0, 2.0, 3.0);
+            Assertions.fail();
+        } catch (IllegalArgumentException exception) {
+            //Ок
+        }
     }
 }
 

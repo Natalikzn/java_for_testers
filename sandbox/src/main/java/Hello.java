@@ -1,11 +1,19 @@
-import java.io.File;
-
 public class Hello {
     public static void main(String[] args) {
-        System.out.println("Моя первая программа!");
+        var x = 1;
+        var y = 1;
 
-        var configFie = new File("sandbox/build.gradle");
-        System.out.println(configFie.getAbsolutePath());
-        System.out.println(configFie.exists());
+        if (y == 0) {
+            System.out.println("Деление на 0 запрещено");
+        } else {
+            var z = divide(x, y);
+            System.out.println(z);
+            System.out.println("Моя первая программа!");
+        }
+    }
+
+    private static int divide(int x, int y) {
+        var z = x / y;
+        return z;
     }
 }
