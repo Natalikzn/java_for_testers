@@ -13,4 +13,19 @@ public class RectangleTests {
             // Ok
         }
     }
+
+    @Test
+    void testEquality() {
+        var r1 = new Rectangle(5.0, 6.0);
+        var r2 = new Rectangle(5.0, 6.0);
+        Assertions.assertEquals(r1,r2);
+    }
+
+    @Test
+    void testEquality2() {
+        var r1 = new Rectangle(5.0, 6.0);
+        var r2 = new Rectangle(6.0, 5.0);
+        Assertions.assertEquals(r1,r2);
+    }
+
 }
