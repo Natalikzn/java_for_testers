@@ -7,7 +7,7 @@
       <excludeFolder url="file://$MODULE_DIR$/sandbox/build" />
       <excludeFolder url="file://$MODULE_DIR$/sandbox/out" />
     </content>
-    <orderEntry type="inheritedJdk" />
+    <orderEntry type="jdk" jdkName="26" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>

@@ -7,7 +7,7 @@
       <sourceFolder url="file://$MODULE_DIR$/../../sandbox/src/test/java" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/../../sandbox/src/test/resources" type="java-test-resource" />
     </content>
-    <orderEntry type="inheritedJdk" />
+    <orderEntry type="jdk" jdkName="26" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="sandbox.main" />
     <orderEntry type="library" name="Gradle: org.junit.jupiter:junit-jupiter:6.0.0" level="project" />
