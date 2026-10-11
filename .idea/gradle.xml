@@ -10,7 +10,6 @@
             <option value="$PROJECT_DIR$/addressbook_web_tests" />
           </set>
         </option>
-        <option name="myGradleHome" value="" />
       </GradleProjectSettings>
       <GradleProjectSettings>
         <option name="delegatedBuild" value="false" />
