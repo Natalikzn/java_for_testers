@@ -11,11 +11,13 @@ import java.time.Duration;
 
 public class ApplicationManager {
 
-    protected WebDriver driver;
-    private LoginHelper session;
-    private GroupHelper groups;
+    protected WebDriver driver; // Ссылка на браузер (доступна наследникам)
+    private LoginHelper session; // Хелпер для авторизации
+    private GroupHelper groups; // Хелпер для работы с группами
+    private ContactHelper contacts; // Хелпер для работы с контактами
 
-    public void init(String browser) {
+
+    public void init(String browser) { // Инициализация браузера и запуск приложения
         if (driver == null) {
             if ("firefox".equals(browser)) {
                 driver = new FirefoxDriver();
@@ -33,21 +35,28 @@ public class ApplicationManager {
         }
     }
 
-    public LoginHelper session() {
+    public LoginHelper session() { // Ленивая инициализация LoginHelper
         if (session == null) {
             session = new LoginHelper(this);
         }
         return session;
     }
 
-    public GroupHelper groups() {
+    public GroupHelper groups() { // Ленивая инициализация GroupHelper
         if (groups == null) {
             groups = new GroupHelper(this);
         }
         return groups;
     }
 
-    protected boolean isElementPresent(By locator) {
+    public ContactHelper contacts() {// Ленивая инициализация ContactHelper
+        if (contacts == null) {
+            contacts = new ContactHelper(this);
+        }
+        return contacts;
+    }
+
+    protected boolean isElementPresent(By locator) { // Проверка наличия элемента на странице (без выброса исключения)
         try {
             driver.findElement(locator);
             return true;

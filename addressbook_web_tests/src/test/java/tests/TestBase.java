@@ -11,9 +11,10 @@ public class TestBase {
     @BeforeEach
     public void setUp() {
         if (app == null) {
+            // Создаём менеджер, если его ещё нет
             app = new ApplicationManager();
         }
-
+// Получаем имя браузера из системных свойств (или по умолчанию — firefox)
         app.init(System.getProperty("browser", "firefox"));
 
     }
