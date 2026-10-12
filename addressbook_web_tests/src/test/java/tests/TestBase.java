@@ -16,7 +16,7 @@ public class TestBase {
             // Создаём менеджер, если его ещё нет
             app = new ApplicationManager();
         }
-// Получаем имя браузера из системных свойств (или по умолчанию — firefox)
+// Получаем имя браузера из системных свойств (по умолчанию — firefox)
         app.init(System.getProperty("browser", "firefox"));
 
     }
