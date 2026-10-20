@@ -20,4 +20,6 @@ public class HelperBase {// Ссылка на главный менеджер
         manager.driver.findElement(locator).clear();
         manager.driver.findElement(locator).sendKeys(text);
     }
+
+
 }
