@@ -25,7 +25,7 @@ public class GroupHelper extends HelperBase {
         //selectGroup();
         fillGroupForm(group); // заполняем форму
         submitGroupCreation(); // нажать кнопку "Enter information"
-        group.setId(id);
+        //group.setId(id);
         returnToGroupsPage(); // вернуться на страницу со списком групп
     }
 
@@ -101,6 +101,7 @@ public class GroupHelper extends HelperBase {
     }
 
     public List<GroupData> getList() {
+        openGroupsPage(); // открыть страницу с группами
         var groups = new ArrayList<GroupData>();
         var spans = manager.driver.findElements(By.cssSelector("span.group"));
         for (var span : spans) {

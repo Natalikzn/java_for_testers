@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Random;
 
-import static org.openqa.selenium.By.id;
-
 public class GroupModificationTests extends TestBase {
 
     @Test
@@ -26,7 +24,7 @@ public class GroupModificationTests extends TestBase {
         var expectedList = new ArrayList<>(oldGroups);
         expectedList.set(index, testData.withId((oldGroups.get(index).id())));
         Comparator<GroupData> compareById = (o1, o2) -> {
-            return Integer.compare(Integer.parseInt(o1.id()), Integer.parseInt(02, id()));
+            return Integer.compare(Integer.parseInt(o1.id()), Integer.parseInt(o2.id()));
         };
         newGroups.sort(compareById);
         expectedList.sort(compareById);
