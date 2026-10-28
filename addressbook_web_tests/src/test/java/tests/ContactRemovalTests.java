@@ -4,6 +4,9 @@ import model.ContactData;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.Random;
+
 public class ContactRemovalTests extends TestBase {
 
 
@@ -15,7 +18,14 @@ public class ContactRemovalTests extends TestBase {
             app.contacts().createContact(new ContactData("", "", "", ""));
         }
         // Удаляем контакт
-        app.contacts().removeContact();
+        var oldContacts = app.contacts().getList(); // получаем старый список
+        var rnd = new Random();
+        var index = rnd.nextInt(oldContacts.size());
+        app.contacts().removeContact(oldContacts.get(index)); // удаляем контакт
+        var newContacts = app.contacts().getList(); // после удаления получаем новый список
+        var expectesList = new ArrayList<>(oldContacts);
+        expectesList.remove(index);
+        Assertions.assertEquals(newContacts, expectesList); // сравниваем новый список со старым без удалённого элемента
     }
 
     @Test

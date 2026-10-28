@@ -6,9 +6,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Comparator; // Comparator нужен для упорядочивания списков контактов по id перед сравнением
 
 
 // Наследуем базовую настройку
@@ -36,6 +36,7 @@ public class ContactCreationTests extends TestBase {
         return result;
     }
 
+    // очищаем список после тестов
     @AfterEach
     public void tearDown() {
         app.contacts().removeAllContacts();
@@ -66,11 +67,19 @@ public class ContactCreationTests extends TestBase {
     @ParameterizedTest
     @MethodSource("contactProvider")
     public void canCreateMultipleContacts(ContactData contact) {
-        int contactCount = app.contacts().getCount();
-
+        var oldContacts = app.contacts().getList(); // получаем старый список контактов (id + имя + фамилия)
         app.contacts().createContact(contact);
-
+        var newContacts = app.contacts().getList(); // получаем новый список (id + имя + фамилия)
         int newContactCount = app.contacts().getCount();
-        Assertions.assertEquals(contactCount + 1, newContactCount);
+        Comparator<ContactData> compareById = (o1, o2) -> {
+            return Integer.compare(Integer.parseInt(o1.id()), Integer.parseInt(o2.id()));
+        };
+        newContacts.sort(compareById); // упорядочиваем список контактов после создания нового контакта
+        var expectedList = new ArrayList<>(oldContacts);
+        expectedList.add(contact.withId(newContacts.get(newContacts.size() - 1).id()).withNickname(""));
+        // берем последний максимальный идентификатор
+        // очищаем nickname перед сравнением, чтобы он не участвовал в сравнении (сравниваем только имя и фамилию)
+        expectedList.sort(compareById); // сортируем expectedList
+        Assertions.assertEquals(newContacts, expectedList); // сравниваем старый список, в который добавлен элемент, и новый список
     }
 }

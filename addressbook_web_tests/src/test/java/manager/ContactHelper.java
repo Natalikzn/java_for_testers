@@ -2,34 +2,32 @@ package manager;
 
 import model.ContactData;
 import org.openqa.selenium.By;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class ContactHelper extends HelperBase {
 
     public ContactHelper(ApplicationManager manager) {
-
         super(manager);
     }
 
     // открываем страницу добавления контакта
     public void openCreateContactPage() {
         if (!manager.isElementPresent(By.name("Last name"))) {
-            click(By.linkText("add new")); // кликаем на "Add new"
+            click(By.linkText("add new"));
         }
     }
 
     // убедиться, что мы на главной странице
     public void homePage() {
         if (!manager.isElementPresent(By.name("last"))) {
-            click(By.linkText("home")); // кликаем на "home"
+            click(By.linkText("home"));
         }
     }
 
     // проверить, есть ли хотя бы один контакт
     public boolean isContactPresent() {
-        homePage();// Сначала убедимся, что мы на главной странице
+        homePage(); // Сначала убедимся, что мы на главной странице
         return manager.isElementPresent(By.name("selected[]")); // Проверяем наличие чекбокса для выбора контакта
     }
 
@@ -38,14 +36,14 @@ public class ContactHelper extends HelperBase {
         openCreateContactPage();// Сначала убедимся, что мы на странице добавления контакта
         fillContactForm(contact); // заполняем форму
         submitContactCreation(); // нажать кнопку "Enter"
-        homePage(); // перейти на главную страницу
+        homePage();
     }
 
-    public void removeContact() { // Удаление контакта
-        homePage(); // перейти на главную страницу
-        selectContact();
+    public void removeContact(ContactData contact) { // Удаление контакта
+        homePage();
+        selectContact(contact);
         removeSelectedContact();
-        homePage(); // перейти на главную страницу
+        homePage();
     }
 
     // Кнопка «Enter»
@@ -58,7 +56,6 @@ public class ContactHelper extends HelperBase {
         click(By.name("add new"));
     }
 
-
     private void removeSelectedContact() {
         click(By.name("delete"));
     }
@@ -69,9 +66,8 @@ public class ContactHelper extends HelperBase {
         type(By.name("nickname"), contact.nickname());
     }
 
-
-    private void selectContact() {
-        click(By.name("selected[]"));
+    private void selectContact(ContactData contact) {
+        click(By.cssSelector(String.format("input[value='%s']", contact.id())));
     }
 
     public int getCount() {
@@ -96,11 +92,15 @@ public class ContactHelper extends HelperBase {
     public List<ContactData> getList() {
         homePage();
         var contacts = new ArrayList<ContactData>();
-        var rows = manager.driver.findElements(By.cssSelector("table#maintable tr td.center:nth-child(2)"));
+        var rows = manager.driver.findElements(By.name("entry")); // собирает все строки контактов
         for (var row : rows) {
+            var cells = row.findElements(By.tagName("td")); // ячейки строки: 0 — чекбокс, 1 — Last name, 2 — First name;
             var id = row.findElement(By.name("selected[]")).getAttribute("value");
             // извлечь lastname/firstname из ячеек строки
-            contacts.add(new ContactData().withId(id));
+            var lastname = cells.get(1).getText();
+            var firstname = cells.get(2).getText();
+            contacts.add(new ContactData().withId(id).withFirstName(firstname).withLastName(lastname));
+            //contacts.add(new ContactData().withId(id));
         }
         return contacts;
     }
