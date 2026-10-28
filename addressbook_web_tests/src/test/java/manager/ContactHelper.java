@@ -39,6 +39,7 @@ public class ContactHelper extends HelperBase {
         homePage();
     }
 
+    // Удаление контакта
     public void removeContact(ContactData contact) { // Удаление контакта
         homePage();
         selectContact(contact);
@@ -64,6 +65,7 @@ public class ContactHelper extends HelperBase {
         type(By.name("firstname"), contact.firstname());
         type(By.name("lastname"), contact.lastname());
         type(By.name("nickname"), contact.nickname());
+        click(By.name("update"));
     }
 
     private void selectContact(ContactData contact) {
@@ -104,5 +106,24 @@ public class ContactHelper extends HelperBase {
         }
         return contacts;
     }
+
+    public void modifyContact(ContactData contact, ContactData modifiedContact) {
+        homePage();
+        selectContactById(contact); // выбрать нужный контакт чекбоксом по его id
+        initContactModification(); // нажать кнопку модификации "Edit"
+        fillContactForm(modifiedContact); // нажать кнопку "Update"
+        homePage();
+    }
+
+    //Выбор конкретного контакта чекбоксом со значением, равным его id.
+    private void selectContactById(ContactData contact) {
+        click(By.cssSelector((String.format("input[value = '%s']", contact.id()))));
+    }
+
+    // Кнопка «Edit» в списке контактов
+    private void initContactModification() {
+        click(By.cssSelector("img[title='Edit']"));
+    }
+
 
 }

@@ -29,4 +29,22 @@ public record ContactData(String id, String firstname, String lastname, String n
         return new ContactData(this.id, this.firstname, this.lastname, nickname);
     }
 
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (other instanceof ContactData contact) {
+            return id.equals(contact.id)
+                    && firstname.equals(contact.firstname)
+                    && lastname.equals(contact.lastname);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
+
 }
