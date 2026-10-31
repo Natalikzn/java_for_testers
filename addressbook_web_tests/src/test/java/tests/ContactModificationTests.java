@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 
 public class ContactModificationTests extends TestBase {
     @Test
@@ -39,15 +40,17 @@ public class ContactModificationTests extends TestBase {
         var oldContacts = app.contacts().getList();
         var index = 0;
         var testData = new ContactData()
-                .withFirstName("modified firstname")
-                .withLastName("modified lastname");
+                .withFirstName("modified firstname3")
+                .withLastName("modified lastname3");
 
         app.contacts().modifyContact(oldContacts.get(index), testData);
 
         var newContacts = app.contacts().getList(); // Новый список
         var expectedList = new ArrayList<>(oldContacts);
         expectedList.set(index, testData.withId(oldContacts.get(index).id()));
+        expectedList.sort(Comparator.comparing(ContactData::id));
+        newContacts.sort(Comparator.comparing(ContactData::id));
         Assertions.assertEquals(expectedList, newContacts); // сравнение списков
-        Assertions.assertEquals(oldContacts.size(), newContacts.size()); // количество контактов не изменилось*/
+        //Assertions.assertEquals(oldContacts.size(), newContacts.size()); // количество контактов не изменилось*/
     }
 }
