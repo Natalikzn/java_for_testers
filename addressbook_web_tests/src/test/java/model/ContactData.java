@@ -1,6 +1,8 @@
 package model;
 
 
+import java.util.Objects;
+
 public record ContactData(String id, String firstname, String lastname, String nickname) {
     // Конструктор по умолчанию (пустой контакт)
     public ContactData() {
@@ -35,16 +37,16 @@ public record ContactData(String id, String firstname, String lastname, String n
             return true;
         }
         if (other instanceof ContactData contact) {
-            return id.equals(contact.id)
-                    && firstname.equals(contact.firstname)
-                    && lastname.equals(contact.lastname);
+            return id != null && id.equals(contact.id);
+                    //&& firstname.equals(contact.firstname)
+                    //&& lastname.equals(contact.lastname);
         }
         return false;
     }
 
     @Override
     public int hashCode() {
-        return id.hashCode();
+        return Objects.hash(id);
     }
 
 }

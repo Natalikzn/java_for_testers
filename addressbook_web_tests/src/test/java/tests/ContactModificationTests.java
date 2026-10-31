@@ -22,7 +22,8 @@ public class ContactModificationTests extends TestBase {
     }
 
     @Test
-        // Модификация не должна менять количество контактов и их порядок
+    // Модификация не должна менять количество контактов и их порядок
+
     void modifyingContactDoesNotChangeCountOrOrder() {
         // Предусловие: в приложении есть хотя бы один контакт.
         if (!app.contacts().isContactPresent()) {
@@ -47,6 +48,6 @@ public class ContactModificationTests extends TestBase {
         var expectedList = new ArrayList<>(oldContacts);
         expectedList.set(index, testData.withId(oldContacts.get(index).id()));
         Assertions.assertEquals(expectedList, newContacts); // сравнение списков
-        Assertions.assertEquals(oldContacts.size(), newContacts.size()); // количество контактов не изменилось
+        Assertions.assertEquals(oldContacts.size(), newContacts.size()); // количество контактов не изменилось*/
     }
 }

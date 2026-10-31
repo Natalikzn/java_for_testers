@@ -13,14 +13,14 @@ public class ContactHelper extends HelperBase {
 
     // открываем страницу добавления контакта
     public void openCreateContactPage() {
-        if (!manager.isElementPresent(By.name("Last name"))) {
+        if (!manager.isElementPresent(By.name("lastname"))) {
             click(By.linkText("add new"));
         }
     }
 
     // убедиться, что мы на главной странице
     public void homePage() {
-        if (!manager.isElementPresent(By.name("last"))) {
+        if (!manager.isElementPresent(By.xpath("//h1[.='Home']"))) {
             click(By.linkText("home"));
         }
     }
@@ -52,6 +52,7 @@ public class ContactHelper extends HelperBase {
         click(By.name("submit"));
     }
 
+
     // Кнопка создания контакта
     private void initContactCreation() {
         click(By.name("add new"));
@@ -65,7 +66,7 @@ public class ContactHelper extends HelperBase {
         type(By.name("firstname"), contact.firstname());
         type(By.name("lastname"), contact.lastname());
         type(By.name("nickname"), contact.nickname());
-        click(By.name("update"));
+        //click(By.name("update"));
     }
 
     private void selectContact(ContactData contact) {
@@ -86,6 +87,9 @@ public class ContactHelper extends HelperBase {
 
     public void removeAllContacts() {
         homePage();
+        if (manager.driver.findElements(By.name("selected[]")).isEmpty()) {
+            return;
+        }
         selectAllContacts();
         removeSelectedContact();
         homePage();
@@ -109,21 +113,25 @@ public class ContactHelper extends HelperBase {
 
     public void modifyContact(ContactData contact, ContactData modifiedContact) {
         homePage();
-        selectContactById(contact); // выбрать нужный контакт чекбоксом по его id
-        initContactModification(); // нажать кнопку модификации "Edit"
-        fillContactForm(modifiedContact); // нажать кнопку "Update"
+        initContactModification(contact); // клик по «карандашику» в строке нужного контакта
+        fillContactForm(modifiedContact); // заполняем форму новыми данными
+        submitContactModification(); // нажать кнопку "Update"
         homePage();
     }
 
     //Выбор конкретного контакта чекбоксом со значением, равным его id.
-    private void selectContactById(ContactData contact) {
+    /*private void selectContactById(ContactData contact) {
         click(By.cssSelector((String.format("input[value = '%s']", contact.id()))));
+    }*/
+
+    private void submitContactModification() {
+        click(By.name("update"));
     }
 
-    // Кнопка «Edit» в списке контактов
-    private void initContactModification() {
-        click(By.cssSelector("img[title='Edit']"));
+    private void initContactModification(ContactData contact) {
+        var row = manager.driver.findElement(By.xpath(
+                String.format("//tr[@name='entry'][.//input[@name='selected[]' and @value='%s']]", contact.id())));
+        row.findElement(By.cssSelector("img[title='Edit']")).click(); // Кликаем по «карандашику» уже внутри найденной строки. Так открывается форма редактирования нужного контакта.
+
     }
-
-
 }
