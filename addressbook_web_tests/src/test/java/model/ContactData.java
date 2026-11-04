@@ -3,32 +3,35 @@ package model;
 
 import java.util.Objects;
 
-public record ContactData(String id, String firstname, String lastname, String nickname) {
+public record ContactData(String id, String firstname, String lastname, String nickname, String photo) {
     // Конструктор по умолчанию (пустой контакт)
     public ContactData() {
-        this("", "", "", "");
+        this("", "", "", "", "");
     }
-     /*public static ContactData empty() {
-        return new ContactData("", "", "");
-    }*/
+
 
     public ContactData withId(String id) {
-        return new ContactData(id, this.firstname, this.lastname, this.nickname);
+        return new ContactData(id, this.firstname, this.lastname, this.nickname, this.photo);
     }
 
     // Метод-билдер: создать новый объект с изменённым именем
     public ContactData withFirstName(String firstname) {
-        return new ContactData(this.id, firstname, this.lastname, this.nickname);
+        return new ContactData(this.id, firstname, this.lastname, this.nickname, this.photo);
     }
 
     // Метод-билдер: создать новый объект с изменённой фамилией
     public ContactData withLastName(String lastname) {
-        return new ContactData(this.id, this.firstname, lastname, this.nickname);
+        return new ContactData(this.id, this.firstname, lastname, this.nickname, this.photo);
     }
 
     // Метод-билдер: создать новый объект с изменённым никнеймом
     public ContactData withNickname(String nickname) {
-        return new ContactData(this.id, this.firstname, this.lastname, nickname);
+        return new ContactData(this.id, this.firstname, this.lastname, nickname, this.photo);
+    }
+
+    // Метод-билдер: создать новый объект с изменённым фото
+    public ContactData withPhoto(String photo) {
+        return new ContactData(this.id, this.firstname, this.lastname, this.nickname, photo);
     }
 
     @Override

@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="Gradle: tools.jackson.dataformat:jackson-dataformat-xml:3.0.0" type="java-imported" external-system-id="GRADLE">
+    <properties groupId="tools.jackson.dataformat" artifactId="jackson-dataformat-xml" version="3.0.0" baseVersion="3.0.0" />
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/tools.jackson.dataformat/jackson-dataformat-xml/3.0.0/3680e192368985c03050de625af819e2aa5a5acf/jackson-dataformat-xml-3.0.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/tools.jackson.dataformat/jackson-dataformat-xml/3.0.0/4f2a4e00a3a4108b8beb50b3f74b23cb60f8f05b/jackson-dataformat-xml-3.0.0-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

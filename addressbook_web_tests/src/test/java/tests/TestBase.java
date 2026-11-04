@@ -3,6 +3,8 @@ package tests;
 import manager.ApplicationManager;
 import org.junit.jupiter.api.BeforeEach;
 
+import java.io.File;
+import java.nio.file.Paths;
 import java.util.Random;
 
 public class TestBase {
@@ -21,13 +23,13 @@ public class TestBase {
 
     }
 
-    public static String randomString(int n) {
-        var rnd = new Random();
-        var result = "";
-        for (int i = 0; i < n; i++) {
-            result = result + (char) ('a' + rnd.nextInt(26));
+    public static String randomFile(String dir) {
+        var fileNames = new File(dir).list();
+        if (fileNames == null || fileNames.length == 0) {
+            throw new IllegalStateException("В директории нет файлов: " + dir);
         }
-        return result;
-
+        var rnd = new Random();
+        var index = rnd.nextInt(fileNames.length); // получаем случайное число, не превышающее количество файлов
+        return Paths.get(dir, fileNames[index]).toString();
     }
 }

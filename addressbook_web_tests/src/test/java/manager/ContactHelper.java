@@ -8,6 +8,7 @@ import java.util.List;
 public class ContactHelper extends HelperBase {
 
     public ContactHelper(ApplicationManager manager) {
+
         super(manager);
     }
 
@@ -52,7 +53,6 @@ public class ContactHelper extends HelperBase {
         click(By.name("submit"));
     }
 
-
     // Кнопка создания контакта
     private void initContactCreation() {
         click(By.name("add new"));
@@ -62,10 +62,17 @@ public class ContactHelper extends HelperBase {
         click(By.name("delete"));
     }
 
+    // сохранить измененный контакт
+    private void submitContactModification() {
+        click(By.name("update"));
+    }
+
+
     private void fillContactForm(ContactData contact) {
         type(By.name("firstname"), contact.firstname());
         type(By.name("lastname"), contact.lastname());
         type(By.name("nickname"), contact.nickname());
+        attach(By.name("photo"), contact.photo());
         //click(By.name("update"));
     }
 
@@ -124,9 +131,6 @@ public class ContactHelper extends HelperBase {
         click(By.cssSelector((String.format("input[value = '%s']", contact.id()))));
     }*/
 
-    private void submitContactModification() {
-        click(By.name("update"));
-    }
 
     private void initContactModification(ContactData contact) {
         var row = manager.driver.findElement(By.xpath(

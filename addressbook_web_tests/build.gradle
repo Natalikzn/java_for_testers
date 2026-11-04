@@ -14,6 +14,10 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testImplementation 'org.seleniumhq.selenium:selenium-java:4.50.0'
+    implementation("com.beust:jcommander:1.82")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.17.0")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.14.2")
+    implementation("tools.jackson.dataformat:jackson-dataformat-xml:3.0.0")
 }
 
 test {

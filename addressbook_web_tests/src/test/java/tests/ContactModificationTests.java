@@ -1,5 +1,6 @@
 package tests;
 
+import common.CommonFunctions;
 import model.ContactData;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -14,9 +15,9 @@ public class ContactModificationTests extends TestBase {
             app.contacts().removeAllContacts(); // чистим список
             for (int i = 0; i < 5; i++) {       // создаём 5 контактов
                 app.contacts().createContact(new ContactData()
-                        .withFirstName(randomString(10))
-                        .withLastName(randomString(10))
-                        .withNickname(randomString(10)));
+                        .withFirstName(CommonFunctions.randomString(10))
+                        .withLastName(CommonFunctions.randomString(10))
+                        .withNickname(CommonFunctions.randomString(10)));
             }
         }
         Assertions.assertTrue(app.contacts().getCount() >= 5); // предусловие выполнено
@@ -30,8 +31,8 @@ public class ContactModificationTests extends TestBase {
         if (!app.contacts().isContactPresent()) {
             for (int i = 0; i < 3; i++) {         // создаём 3 контакта
                 app.contacts().createContact(new ContactData()
-                        .withFirstName(randomString(10))
-                        .withLastName(randomString(10)));
+                        .withFirstName(CommonFunctions.randomString(10))
+                        .withLastName(CommonFunctions.randomString(10)));
             }
         }
         Assertions.assertTrue(app.contacts().isContactPresent()); // предусловие выполнено
@@ -40,8 +41,8 @@ public class ContactModificationTests extends TestBase {
         var oldContacts = app.contacts().getList();
         var index = 0;
         var testData = new ContactData()
-                .withFirstName("modified firstname3")
-                .withLastName("modified lastname3");
+                .withFirstName("modified firstname4")
+                .withLastName("modified lastname4");
 
         app.contacts().modifyContact(oldContacts.get(index), testData);
 
