@@ -1,5 +1,6 @@
 package tests;
 
+import model.GroupData;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
 import common.CommonFunctions;
@@ -62,14 +63,37 @@ public class ContactCreationTests extends TestBase {
         app.contacts().removeAllContacts();
     }*/
 
-    /*@Test
+    // Тест на создание контакта, не включенного в группу
+    @Test
     void canCreateContact() {
         var contact = new ContactData()
                 .withFirstName(CommonFunctions.randomString(10))
                 .withLastName(CommonFunctions.randomString(10))
                 .withPhoto(randomFile("src/test/resources/images/"));
         app.contacts().createContact(contact);
-    }*/
+    }
+
+    // Тест на создание контакта, включенного в группу
+    @Test
+    void canCreateContactInGroup() {
+        var contact = new ContactData()
+                .withFirstName(CommonFunctions.randomString(10))
+                .withLastName(CommonFunctions.randomString(10))
+                .withPhoto(randomFile("src/test/resources/images/"));
+        // для выбора группы если ее нет, то ее нужно создать
+        if (app.hbm().getGroupCount() == 0) {
+            app.hbm().createGroup(new GroupData("", "group name", "group header", "group footer"));
+        }
+        var group = app.hbm().getGroupList().get(0); // получаем список групп и выбираем первую из них
+
+        var oldRelated = app.hbm().getContactsInGroup(group); // смотрим какие контакты уже включены в эту группу
+        app.contacts().createContact(contact, group); // создаем контакт
+        var newRelated = app.hbm().getContactsInGroup(group); // загружаем новый список
+        // здесь надо будет сделать полноценную сверку списков по фио, а не только по изменившемуся количеству
+        Assertions.assertEquals(oldRelated.size() + 1, newRelated.size());// проверка, что новый список содержит на 1 элемент больше, чем старый
+    }
+
+
 
     /*@ParameterizedTest
     // Создаём контакт с заполненными полями

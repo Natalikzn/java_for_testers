@@ -16,6 +16,8 @@ public class ApplicationManager {
     private GroupHelper groups; // Хелпер для работы с группами
     private ContactHelper contacts; // Хелпер для работы с контактами
     private Properties properties;
+    private JdbcHelper jdbc;
+    private HibernateHelper hbm;
 
     public void init(String browser, Properties properties) { // Инициализация браузера и запуск приложения
         this.properties = properties;
@@ -55,6 +57,20 @@ public class ApplicationManager {
             contacts = new ContactHelper(this);
         }
         return contacts;
+    }
+
+    public JdbcHelper jdbc() {// Ленивая инициализация JdbcHelper
+        if (jdbc == null) {
+            jdbc = new JdbcHelper(this);
+        }
+        return jdbc;
+    }
+
+    public HibernateHelper hbm() {// Ленивая инициализация JdbcHelper
+        if (hbm == null) {
+            hbm = new HibernateHelper(this);
+        }
+        return hbm;
     }
 
     protected boolean isElementPresent(By locator) { // Проверка наличия элемента на странице (без выброса исключения)

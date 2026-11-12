@@ -9,7 +9,6 @@ import java.util.List;
 public class GroupHelper extends HelperBase {
 
     public GroupHelper(ApplicationManager manager) {
-
         super(manager);
     }
 

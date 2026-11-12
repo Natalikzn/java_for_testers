@@ -2,6 +2,7 @@ package tests;
 
 //import com.fasterxml.jackson.core.type.TypeReference;
 
+import common.CommonFunctions;
 import model.GroupData;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -33,7 +34,6 @@ public class GroupCreationTests extends TestBase {
                 }
             }
         }*/
-
         /*var json = "";
         try (var reader = new FileReader("groups.json");
             var breader = new BufferedReader(reader)) {
@@ -43,14 +43,23 @@ public class GroupCreationTests extends TestBase {
                 line = breader.readLine();
             }
         }*/
-
         //var json = Files.readString(Paths.get("groups.json"));
+
         var mapper = new XmlMapper();
+
         //var value = mapper.readValue(json, new TypeReference<List<GroupData>>() {});
+
         var value = mapper.readValue(new File("groups.xml"), new TypeReference<List<GroupData>>() {
         });
         result.addAll(value);
         return result;
+    }
+
+    public static List<GroupData> singleRandomGroup() {
+        return List.of(new GroupData()
+                .withName(CommonFunctions.randomString(10))
+                .withHeader(CommonFunctions.randomString(20))
+                .withFooter(CommonFunctions.randomString(30)));
     }
 
     public static List<GroupData> negativeGroupProvider() {
@@ -60,20 +69,27 @@ public class GroupCreationTests extends TestBase {
     }
 
     @ParameterizedTest
-    @MethodSource("groupProvider")
-    public void canCreateMultipleGroups(GroupData group) {
-        var oldGroups = app.groups().getList(); // получаем старый список групп
+    //@MethodSource("groupProvider")
+    @MethodSource("singleRandomGroup")
+    //public void canCreateMultipleGroups(GroupData group) {
+    public void canCreateGroup(GroupData group) {
+        var oldGroups = app.jdbc().getGroupList(); // получаем старый список групп
         app.groups().createGroup(group);
-        var newGroups = app.groups().getList(); // получаем новый список
+        var newGroups = app.jdbc().getGroupList(); // получаем новый список
         Comparator<GroupData> compareById = (o1, o2) -> {
             return Integer.compare(Integer.parseInt(o1.id()), Integer.parseInt(o2.id()));
         };
         newGroups.sort(compareById); // упорядочиваем список групп после создания новой группы
+
+        var maxId = newGroups.get(newGroups.size() - 1).id(); // максимальный из существующих id, то есть id новой созданной группы
+
         var expectedList = new ArrayList<>(oldGroups);
-        expectedList.add(group.withId(newGroups.get(newGroups.size() - 1).id()).withHeader("").withFooter("")); // берем последний максимальный идентификатор
+        expectedList.add(group.withId(maxId)); // берем последний максимальный идентификатор
         // очищаем header и footer перед сортировкой, чтобы они не участвовали в сравнении
         expectedList.sort(compareById); // сортируем expectedList
         Assertions.assertEquals(newGroups, expectedList); // сравниваем старый список, в который добавлен элемент, и новый список
+
+        //var newUiGroups = app.groups().getList(); // создаем список групп с UI  и далее сравнивать с newGroups, но опять только по id и name
     }
 
     @ParameterizedTest

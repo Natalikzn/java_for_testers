@@ -15,7 +15,7 @@ public class ContactRemovalTests extends TestBase {
         app.contacts().homePage(); // Гарантированно переходим на страницу home
         // Если нет контакта, создаём один, чтобы было что удалять
         if (!app.contacts().isContactPresent()) {
-            app.contacts().createContact(new ContactData("", "", "", "", ""));
+            app.contacts().createContact(new ContactData("", "", "", "", "", ""));
         }
         // Удаляем контакт
         var oldContacts = app.contacts().getList(); // получаем старый список
@@ -32,7 +32,7 @@ public class ContactRemovalTests extends TestBase {
     @Test
     void canRemoveAllContactsAtOnce() {
         if (app.contacts().getCount() == 0) {
-            app.contacts().createContact(new ContactData("", "", "", "", ""));
+            app.contacts().createContact(new ContactData("", "", "", "", "", ""));
         }
         app.contacts().removeAllContacts();
         Assertions.assertEquals(0, app.contacts().getCount());
