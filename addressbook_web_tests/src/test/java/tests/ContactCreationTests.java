@@ -1,7 +1,4 @@
-// Пакет tests — тесты, работающие через UI и БД.
 package tests;
-
-// Модель группы — нужна для создания группы и привязки контакта.
 
 import common.CommonFunctions;
 import model.ContactData;
@@ -42,26 +39,9 @@ public class ContactCreationTests extends TestBase {
         // Аккумулятор набора тестовых данных.
         var result = new ArrayList<ContactData>();
 
-        /*for (var firstname : List.of("", "first_name")) {
-            for (var lastname : List.of("", "last_name")) {
-                for (var nickname : List.of("", "nickname")) {
-                    result.add(new ContactData()
-                            .withFirstName(firstname)
-                            .withLastName(lastname)
-                            .withNickname(nickname));
-                }
-            }
-        }*/
-
         // Создаём JSON-маппер для чтения файла.
         var mapper = new ObjectMapper();
 
-        /*for (int i = 1; i < 3; i++) {
-            result.add(new ContactData()
-                    .withFirstName(CommonFunctions.randomString(i * 10))
-                    .withLastName(CommonFunctions.randomString(i * 10))
-                    .withNickname(CommonFunctions.randomString(i * 10)));
-        }*/
         // Читаем JSON-файл contacts.json и превращаем его в List<ContactData>.
         // TypeReference сохраняет информацию о генерическом типе при десериализации.
         var value = mapper.readValue(new File("contacts.json"),
@@ -72,18 +52,6 @@ public class ContactCreationTests extends TestBase {
         // Возвращаем набор для параметризованного теста.
         return result;
     }
-
-    /*public static List<ContactData> negativeContactProvider() {
-        var result = new ArrayList<ContactData>(List.of(
-                new ContactData("", "contact ' lastname", "", "")));
-        return result;
-    }
-
-    // очищаем список после тестов
-    @AfterEach
-    public void tearDown() {
-        app.contacts().removeAllContacts();
-    }*/
 
     // Тест на создание контакта, не включенного в группу
     @Test
@@ -96,6 +64,23 @@ public class ContactCreationTests extends TestBase {
         // Создаём контакт через UI. Проверка результата здесь не выполняется (smoke-сценарий).
         app.contacts().createContact(contact);
     }
+
+    // ФИО контакта в виде одной строки: фамилия + имя.
+    // Нужно для сверки списков именно по ФИО, а не по id (equals ContactData сравнивает только id).
+    private static String fullName(ContactData contact) {
+        return (contact.lastname() + "" + contact.firstname()).trim();
+    }
+
+    // Список ФИО, упорядоченный по возрастанию id.
+    // Сортировка по id делает сравнение независимым от порядка выдачи строк из БД,
+    // а сравнение строк ФИО проверяет и состав списка, и сами имена/фамилии.
+    private static List<String> fullNames(List<ContactData> contacts) {
+        return contacts.stream()
+                .sorted(Comparator.comparingInt((ContactData c) -> Integer.parseInt(c.id())))
+                .map(ContactCreationTests::fullName)
+                .toList();
+    }
+
 
     // Тест на создание контакта, включенного в группу
     @Test
@@ -118,7 +103,24 @@ public class ContactCreationTests extends TestBase {
         app.contacts().createContact(contact, group);
         // загружаем новый список
         var newRelated = app.hbm().getContactsInGroup(group);
-        // здесь надо будет сделать полноценную сверку списков по фио, а не только по изменившемуся количеству
+        // id контактов, которые были в группе до создания нового.
+        var oldIds = oldRelated.stream().map(ContactData::id).toList();
+        // Контакты, которых раньше не было: в идеале это ровно один только что созданный контакт.
+        var added = newRelated.stream().filter(c -> !oldIds.contains(c.id())).toList();
+        Assertions.assertEquals(1, added.size(),
+                "В группе должен появиться ровно один новый контакт");
+        // Ожидаемый список: прежние контакты группы + созданный контакт
+        // с тем id, который присвоила ему БД.
+        var expectedList = new ArrayList<>(oldRelated);
+        expectedList.add(contact.withId(added.get(0).id()));
+        // Полноценная сверка списков по ФИО: проверяются и количество, и состав,
+        // и совпадение имени/фамилии у каждого контакта, а не только размер списка.
+        Assertions.assertEquals(fullNames(expectedList), fullNames(newRelated)
+                //"Список контактов группы должен совпасть с ожидаемым по ФИО"
+        );
+        // ФИО созданного контакта действительно попало в группу.
+        Assertions.assertEquals(fullName(contact), fullName(added.get(0)));
+                //"Созданный контакт должен быть найден в группе с теми же именем и фамилией")
         Assertions.assertEquals(oldRelated.size() + 1, newRelated.size());// проверка, что новый список содержит на 1 элемент больше, чем старый
     }
 
@@ -156,7 +158,6 @@ public class ContactCreationTests extends TestBase {
         app.contacts().createContact(contact);
         // получаем новый список (id + имя + фамилия)
         var newContacts = app.contacts().getList();
-        /*int newContactCount = app.contacts().getCount();*/
 
         // Компаратор: сравниваем контакты по числовому значению id.
         Comparator<ContactData> compareById = (o1, o2) -> {
