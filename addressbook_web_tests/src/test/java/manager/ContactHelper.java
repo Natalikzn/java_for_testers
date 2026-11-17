@@ -87,12 +87,37 @@ public class ContactHelper extends HelperBase {
     }
 
     // Заполнение формы контакта значениями из модели.
+    //
+    // Задание 14: тесты проверяют контакт по данным из БД, поэтому в форму нужно
+    // отправлять все заполняемые атрибуты, а не только имя/фамилию/никнейм.
+    // Иначе проверка «в БД лежит то, что мы ввели» была бы бессмысленной:
+    // мы бы просто не вводили большинство полей.
+    //
+    // Заполняются только те поля, которые реально сохраняются в таблицу addressbook.
+    // В таблице нет колонок address2, phone2 и notes, поэтому соответствующие атрибуты
+    // в модели отсутствуют и в форму не вводятся.
     private void fillContactForm(ContactData contact) {
+        // --- имя и идентификация ---
         type(By.name("firstname"), contact.firstname());
+        type(By.name("middlename"), contact.middlename());
         type(By.name("lastname"), contact.lastname());
         type(By.name("nickname"), contact.nickname());
-        attach(By.name("photo"), contact.photo()); // Прикрепляем фото: если путь пустой/null, attach просто ничего не делает.
-        /*click(By.name("update"));*/
+        // --- работа ---
+        type(By.name("title"), contact.title());
+        type(By.name("company"), contact.company());
+        // --- адрес (отдельного поля address2 в таблице БД нет) ---
+        type(By.name("address"), contact.address());
+        // --- телефоны (отдельного поля phone2 в таблице БД нет) ---
+        type(By.name("home"), contact.home());
+        type(By.name("mobile"), contact.mobile());
+        type(By.name("work"), contact.work());
+        // --- интернет ---
+        type(By.name("email"), contact.email());
+        type(By.name("email2"), contact.email2());
+        type(By.name("email3"), contact.email3());
+        type(By.name("homepage"), contact.homepage());
+        // Фото: если путь пустой/null, attach просто ничего не делает.
+        attach(By.name("photo"), contact.photo());
     }
 
     // Отметить контакт чекбоксом по его id.

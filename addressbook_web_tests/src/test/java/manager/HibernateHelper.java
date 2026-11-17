@@ -17,10 +17,20 @@ import org.hibernate.cfg.Configuration;
 import org.jspecify.annotations.NonNull;
 // ArrayList — изменяемый список результатов конвертации.
 import java.util.ArrayList;
+// Comparator — сортировка списка по id.
+import java.util.Comparator;
 // List — интерфейс списка.
 import java.util.List;
 
 // HibernateHelper — доступ к БД через ORM: чтение групп/контактов и их связей.
+//
+// Задание 14: тесты проверяют списки, загруженные ИЗ БД, а не из интерфейса.
+// Именно этот класс — точка входа для таких проверок: getContactList() отдаёт полный
+// список контактов со всеми «плоскими» атрибутами (включая те, что не видны в UI).
+//
+// Состав колонок таблицы addressbook ограничивает переносимые атрибуты: в ней есть
+// address, но НЕТ address2; есть home/mobile/work/fax, но НЕТ phone2; НЕТ колонки notes.
+// Конвертация переносит только реально существующие в таблице поля.
 public class HibernateHelper extends HelperBase {
     // Публичное поле с фабрикой сессий: через него выполняются все запросы.
     public SessionFactory sessionFactory;
@@ -40,7 +50,6 @@ public class HibernateHelper extends HelperBase {
                 .buildSessionFactory();
     }
 
-
     // Преобразователь - функция, которая из объектов типов GroupRecord строит объекты типа GroupData
     static List<GroupData> convertList(List<GroupRecord> records) {
         List<GroupData> result = new ArrayList<>(); // Создаём пустой результирующий список моделей.
@@ -52,7 +61,7 @@ public class HibernateHelper extends HelperBase {
         return result; // Возвращаем список GroupData.
     }
 
-    // Метод для конвертаци списка. Аналогично convertList, но для контактов.
+    // Метод для конвертации списка. Аналогично convertList, но для контактов.
     static List<ContactData> convertContactList(List<ContactRecord> records) {
         List<ContactData> result = new ArrayList<>();
         for (var record : records) {
@@ -82,15 +91,33 @@ public class HibernateHelper extends HelperBase {
         return new GroupRecord(Integer.parseInt(id), data.name(), data.header(), data.footer());
     }
 
-    // Методы для отдельного конверта контакта в одну и в другую сторону:
+    // ===================== Конвертация контактов =====================
 
     // DB → модель: ContactRecord превращаем в ContactData.
+    // Переносим ВСЕ «плоские» текстовые атрибуты, которые есть в маппинге и реально
+    // присутствуют в таблице addressbook, кроме фото (фото в БД — blob, его мы
+    // сознательно не сравниваем). Колонки address2, phone2 и notes в таблице отсутствуют,
+    // поэтому их значения взять неоткуда и в конвертации они не участвуют.
+    // null-значения не обрабатываем здесь: компактный конструктор ContactData сам
+    // приводит null к пустой строке.
     private static ContactData convert(ContactRecord record) {
-        // Создаём пустой ContactData и через билдеры заполняем id, имя, фамилию, адрес.
-        return new ContactData().withId("" + record.id)
+        return new ContactData()
+                .withId("" + record.id)          // числовой id из БД → строка в модели
                 .withFirstName(record.firstname)
+                .withMiddleName(record.middlename)
                 .withLastName(record.lastname)
-                .withAddressName(record.address);
+                .withNickname(record.nickname)
+                .withTitle(record.title)
+                .withCompany(record.company)
+                .withAddressName(record.address)
+                .withHome(record.home)
+                .withMobile(record.mobile)
+                .withWork(record.work)
+                .withFax(record.fax)
+                .withEmail(record.email)
+                .withEmail2(record.email2)
+                .withEmail3(record.email3)
+                .withHomepage(record.homepage);
     }
 
     // Модель → DB: ContactData превращаем в ContactRecord.
@@ -101,9 +128,27 @@ public class HibernateHelper extends HelperBase {
         if ("".equals(id)) {
             id = "0";
         }
-        // Создаём сущность контакта с числовым id и остальными полями.
-        return new ContactRecord(Integer.parseInt(id), data.firstname(), data.lastname(), data.address());
+        // Создаём сущность контакта: числовой id + все текстовые атрибуты таблицы addressbook.
+        return new ContactRecord(
+                Integer.parseInt(id),
+                data.firstname(),
+                data.middlename(),
+                data.lastname(),
+                data.nickname(),
+                data.title(),
+                data.company(),
+                data.address(),
+                data.home(),
+                data.mobile(),
+                data.work(),
+                data.fax(),
+                data.email(),
+                data.email2(),
+                data.email3(),
+                data.homepage());
     }
+
+    // ===================== Группы =====================
 
     // Получить список всех групп из БД.
     public List<GroupData> getGroupList() {
@@ -142,7 +187,63 @@ public class HibernateHelper extends HelperBase {
         return sessionFactory.fromSession(session -> {
             // Зная id группы получаем объект типа GroupRecord, а у него свойство contacts
             // session.get загружает сущность по первичному ключу; .contacts — связь many-to-many из GroupRecord.
-         return convertContactList(session.get(GroupRecord.class, group.id()).contacts); //Зная id группы получаем объект типа GroupRecord, а у него свойство contacts
+            return convertContactList(session.get(GroupRecord.class, group.id()).contacts);
         });
+    }
+
+    // ===================== Контакты =====================
+
+    // Получить полный список контактов ИЗ БД со всеми сравнимыми атрибутами.
+    //
+    // Это ключевой метод задания 14: тесты создания/удаления/модификации контактов
+    // строят ожидаемый список и читают фактический именно здесь, а не через
+    // ContactHelper#getList() (тот видит только фамилию и имя из таблицы UI).
+    //
+    // Список принудительно сортируется по id: без ORDER BY СУБД не гарантирует порядок
+    // строк, и сравнение «до/после» могло бы падать из-за перестановки элементов,
+    // хотя данные не менялись.
+    public List<ContactData> getContactList() {
+        var contacts = sessionFactory.fromSession(session -> {
+            // HQL "from ContactRecord" = SELECT * FROM addressbook.
+            return session.createQuery("from ContactRecord", ContactRecord.class).list();
+        });
+        // Преобразуем записи БД в модели и сортируем по числовому значению id.
+        var result = convertContactList(contacts);
+        result.sort(Comparator.comparingInt(contact -> Integer.parseInt(contact.id())));
+        return result;
+    }
+
+    // Количество контактов в БД (дешевле, чем читать весь список).
+    public long getContactCount() {
+        return sessionFactory.fromSession(session -> {
+            // count(*) по таблице контактов.
+            return session.createQuery("select count(*) from ContactRecord", Long.class).getSingleResult();
+        });
+    }
+
+    // Создать контакт напрямую в БД (без UI) — для подготовки данных в предусловиях тестов.
+    // Возвращаем сохранённый ContactData: первичный ключ присваивает БД, и он нужен вызывающему коду.
+    public ContactData createContact(ContactData contactData) {
+        // Переменная для сгенерированного БД первичного ключа.
+        var id = 0;
+        // inSession — сессия с автоматическим управлением жизненным циклом (закрывается сама).
+        var session = sessionFactory.openSession();
+        try {
+            // Начинаем транзакцию: запись должна быть атомарной.
+            session.getTransaction().begin();
+            // Готовим сущность из модели (новый контакт приходит с пустым id → он станет 0).
+            var record = convert(contactData);
+            // persist сохраняет объект; после flush/commit Hibernate проставит record.id.
+            session.persist(record);
+            // Фиксируем транзакцию.
+            session.getTransaction().commit();
+            // Запоминаем присвоенный id.
+            id = record.id;
+        } finally {
+            // Сессию закрываем в любом случае, даже если запись упала.
+            session.close();
+        }
+        // Возвращаем модель с настоящим id из БД — такую запись можно сравнивать со списком.
+        return contactData.withId("" + id);
     }
 }
