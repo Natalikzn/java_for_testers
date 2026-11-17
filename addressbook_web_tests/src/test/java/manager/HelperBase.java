@@ -22,7 +22,7 @@ public class HelperBase {
         manager.driver.findElement(locator).click();
     }
 
-    // Ввод текста в поле: клик, очистка, ввод
+    //Ввод текста в поле: клик, очистка, ввод
     /*protected void type(By locator, String text) {
         click(locator);
         manager.driver.findElement(locator).clear();
