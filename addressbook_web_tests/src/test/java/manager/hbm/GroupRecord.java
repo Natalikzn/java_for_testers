@@ -4,6 +4,7 @@ package manager.hbm;
 import jakarta.persistence.*; // Импортируем все аннотации JPA (Entity, Table, Id, Column, ManyToMany, JoinTable, JoinColumn)
 
 import java.util.Date; // Импорт java.util.Date — используется для поля deprecated
+import java.sql.Timestamp;
 import java.util.List; // Импорт List — тип коллекции связанных контактов
 
 /*import java.sql.Date;*/
@@ -27,7 +28,9 @@ public class GroupRecord {
     @Column(name = "group_footer")
     public String footer;
 
-    public Date deprecated = new Date(); // Техническое поле, имитирующее устаревшую колонку; инициализируется текущей датой.
+    //public Date deprecated = new Date(); // Техническое поле, имитирующее устаревшую колонку; инициализируется текущей датой.
+    @Column(name = "deprecated")
+    public java.sql.Timestamp deprecated = java.sql.Timestamp.valueOf("0002-11-30 00:00:00");
 
     // @ManyToMany — связь «многие ко многим»: в группе много контактов, контакт может быть в многих группах.
     @ManyToMany //(fetch = FetchType.EAGER) загружать информацию о связях как можно раньше - не используем

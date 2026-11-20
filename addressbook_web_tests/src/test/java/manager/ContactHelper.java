@@ -4,8 +4,12 @@ package manager;
 import model.ContactData; // Модель контакта (record) — данные, которые вводим или читаем со страницы.
 import model.GroupData; // Модель группы — нужна для привязки контакта к группе.
 import org.openqa.selenium.By; // By — локаторы Selenium.
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select; // Select — обёртка для работы с выпадающими списками (<select>).
+import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.time.Duration;
 import java.util.ArrayList; // ArrayList — изменяемый список результатов.
 import java.util.List; // List — интерфейс списка.
 
@@ -189,5 +193,72 @@ public class ContactHelper extends HelperBase {
                 String.format("//tr[@name='entry'][.//input[@name='selected[]' and @value='%s']]", contact.id())));
         // Кликаем по «карандашику» уже внутри найденной строки. Так открывается форма редактирования нужного контакта.
         row.findElement(By.cssSelector("img[title='Edit']")).click(); // Кликаем по «карандашику» уже внутри найденной строки. Так открывается форма редактирования нужного контакта.
+    }
+
+    // ==================== Задание 15: добавление контакта в группу / удаление из группы ====================
+
+    // Добавить контакт в группу полностью через пользовательский интерфейс, шаг в шаг по заданию:
+    //   1) на главной странице отметить контакт галочкой (чекбокс selected[] со значением id контакта);
+    //   2) в выпадающем списке справа внизу выбрать целевую группу;
+    //   3) нажать кнопку "Add to".
+    public void addContactToGroup(ContactData contact, GroupData group) {
+        homePage();                  // предусловие действия: открыта главная страница со списком контактов.
+        selectContact(contact);      // отмечаем контакт галочкой.
+        selectGroupInAddForm(group); // в нижнем выпадающем списке выбираем группу по её id.
+        submitAddTo();               // нажимаем кнопку "Add to".
+        homePage();                  // после POST-запроса возвращаемся на список контактов.
+    }
+
+    // Фильтр списка контактов по группе: выбираем группу в выпадающем списке справа вверху главной страницы.
+    // В приложении addressbook форма фильтра отправляется автоматически при выборе опции
+    // (атрибут onchange="this.form.submit()"), поэтому отдельный клик по кнопке не нужен.
+    // После этого в таблице остаются только контакты, входящие в выбранную группу.
+    public void filterByGroup(GroupData group) {
+        homePage(); // убеждаемся, что мы на главной странице, прежде чем трогать фильтр.
+        new Select(manager.driver.findElement(By.name("group"))).selectByValue(group.id());
+    }
+
+    // Сбросить фильтр по группе — снова показать все контакты.
+    // Первая опция фильтра ([all]) имеет пустое значение value, поэтому выбираем её по индексу.
+    /*public void showAllContactsOfAllGroups() {
+        new Select(manager.driver.findElement(By.name("group"))).selectByIndex(0);
+    }*/
+    public void showAllContactsOfAllGroups() {
+        WebDriverWait wait = new WebDriverWait(manager.driver, Duration.ofSeconds(10));
+        WebElement select = wait.until(ExpectedConditions.visibilityOfElementLocated(By.name("group")));
+        new Select(select).selectByIndex(0);
+    }
+
+    // Удалить контакт из группы через пользовательский интерфейс:
+    //   1) отметить контакт галочкой;
+    //   2) нажать кнопку "Remove from";
+    //   3) сбросить фильтр, вернувшись ко всему списку контактов.
+    // ПРЕДУСЛОВИЕ: вызывающий код уже применил фильтр по группе методом filterByGroup(),
+    // то есть на странице показаны только контакты этой группы и нужный контакт виден.
+    public void removeContactFromGroup(ContactData contact) {
+        selectContact(contact);            // отмечаем контакт галочкой.
+        click(By.name("remove"));          // нажимаем кнопку "Remove from".
+        showAllContactsOfAllGroups();      // снимаем фильтр — снова все контакты.
+    }
+
+    // id контактов, отображаемых в таблице главной страницы ПРЯМО СЕЙЧАС (без навигации).
+    // Отличается от getList() тем, что не вызывает homePage(): переход по ссылке home
+    // сбросил бы применённый фильтр по группе, а проверке нужен текущий вид таблицы.
+    public List<String> getDisplayedContactIds() {
+        var ids = new ArrayList<String>(); // аккумулятор результата.
+        for (var row : manager.driver.findElements(By.name("entry"))) { // строки таблицы контактов.
+            ids.add(row.findElement(By.name("selected[]")).getAttribute("value")); // id из value чекбокса строки.
+        }
+        return ids;
+    }
+
+    // Приватный шаг: выбрать целевую группу в выпадающем списке справа внизу (форма кнопки "Add to").
+    private void selectGroupInAddForm(GroupData group) {
+        new Select(manager.driver.findElement(By.name("to_group"))).selectByValue(group.id());
+    }
+
+    // Приватный шаг: нажать кнопку "Add to" (input name="add").
+    private void submitAddTo() {
+        click(By.name("add"));
     }
 }

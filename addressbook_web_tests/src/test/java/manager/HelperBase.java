@@ -2,8 +2,12 @@
 package manager;
 
 import org.openqa.selenium.By; // By — тип локатора Selenium (name, xpath, css и т.д.).
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.nio.file.Paths; // Paths — утилита для построения путей к файлам.
+import java.time.Duration;
 
 // Базовый класс для всех хелперов: хранит ссылку на менеджер и общие действия с элементами.
 public class HelperBase {
@@ -18,8 +22,13 @@ public class HelperBase {
     }
 
     // Клик по элементу. locator — стратегия поиска; метод находит элемент и кликает по нему.
-    protected void click(By locator) {
+    /*protected void click(By locator) {
         manager.driver.findElement(locator).click();
+    }*/
+    protected void click(By locator) {
+        WebElement element = new WebDriverWait(manager.driver, Duration.ofSeconds(10))
+                .until(ExpectedConditions.elementToBeClickable(locator));
+        element.click();
     }
 
     //Ввод текста в поле: клик, очистка, ввод

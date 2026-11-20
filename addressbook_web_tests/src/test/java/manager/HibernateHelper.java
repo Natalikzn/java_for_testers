@@ -159,6 +159,16 @@ public class HibernateHelper extends HelperBase {
         }));
     }
 
+    // Добавлен метод: список только «живых» групп (deprecated is null).
+    // Зачем: view group_list отдаёт и soft-deleted группы, которых нет в UI чекбоксами.
+    // Источник выбора/проверки должен совпадать с UI-множеством.
+    public List<GroupData> getVisibleGroupList() {
+        return convertList(sessionFactory.fromSession(session -> {
+            return session.createQuery("from GroupRecord where deprecated is null", GroupRecord.class)
+                    .getResultList();
+        }));
+    }
+
     // Метод для подсчета количества групп из БД
     public long getGroupCount() {
         // Открываем сессию и выполняем запрос.
@@ -177,6 +187,21 @@ public class HibernateHelper extends HelperBase {
             // persist сохраняет новый объект в БД.
             session.persist(convert(groupData));
             // Фиксируем транзакцию — данные записаны.
+            session.getTransaction().commit();
+        });
+    }
+    public void assignContactToGroup(ContactData contact, GroupData group) {
+        sessionFactory.inSession(session -> {
+            session.getTransaction().begin();
+            // Явная вставка в промежуточную таблицу вместо dirty-checking коллекции:
+            // @ManyToMany на отложенной коллекции в этой связке не всегда генерирует INSERT
+            // до flush. INSERT IGNORE даёт детерминированную запись и пропускает дубликат,
+            // поэтому предусловие остаётся идемпотентным.
+            session.createNativeMutationQuery(
+                            "INSERT IGNORE INTO address_in_groups (group_id, id) VALUES (:gid, :cid)")
+                    .setParameter("gid", Integer.parseInt(group.id()))
+                    .setParameter("cid", Integer.parseInt(contact.id()))
+                    .executeUpdate();
             session.getTransaction().commit();
         });
     }
@@ -246,4 +271,35 @@ public class HibernateHelper extends HelperBase {
         // Возвращаем модель с настоящим id из БД — такую запись можно сравнивать со списком.
         return contactData.withId("" + id);
     }
+
+    // ===================== Задание 15: связи контакта и группы =====================
+
+    // Включить контакт в группу напрямую в БД (без UI).
+    //
+    // Нужен для ОБЕСПЕЧЕНИЯ ПРЕДУСЛОВИЯ теста удаления контакта из группы: чтобы удалять
+    // связь, она должна существовать. Реализация через БД, а не через UI-добавление,
+    // deliberately: предусловие не должно зависеть от и проверять тот же UI-метод,
+    // который тестируется (иначе тест удаления перестал бы быть независимым).
+    //
+    // Работаем через связь many-to-many сущности GroupRecord: Hibernate при коммите
+    // транзакции сам добавит недостающую строку в промежуточную таблицу address_in_groups.
+    /*public void assignContactToGroup(ContactData contact, GroupData group) {
+        sessionFactory.inSession(session -> {
+            // Транзакция: изменение связи должно быть атомарным.
+            session.getTransaction().begin();
+            // Загружаем обе сущности по первичным ключам (id в модели — строка, в БД — число).
+            var contactRecord = session.get(ContactRecord.class, Integer.parseInt(contact.id()));
+            var groupRecord = session.get(GroupRecord.class, Integer.parseInt(group.id()));
+            // Защита на случай, если коллекция связей ещё не инициализирована.
+            if (groupRecord.contacts == null) {
+                groupRecord.contacts = new ArrayList<>();
+            }
+            // Дубликат связи не добавляем: предусловие должно быть идемпотентным.
+            if (!groupRecord.contacts.contains(contactRecord)) {
+                groupRecord.contacts.add(contactRecord);
+            }
+            // Фиксация — Hibernate сгенерирует INSERT в address_in_groups.
+            session.getTransaction().commit();
+        });
+    }*/
 }

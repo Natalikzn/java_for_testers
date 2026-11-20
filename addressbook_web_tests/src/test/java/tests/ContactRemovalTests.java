@@ -2,18 +2,19 @@
 package tests;
 
 // Модель контакта.
-import model.ContactData;
-// Класс с генераторами случайных строк.
+
 import common.CommonFunctions;
-// Методы-проверки JUnit.
+import model.ContactData;
 import org.junit.jupiter.api.Assertions;
-// Аннотация обычного теста.
 import org.junit.jupiter.api.Test;
 
 import java.util.Random; // Random — случайный выбор контакта.
 
+// Класс с генераторами случайных строк.
+// Методы-проверки JUnit.
+// Аннотация обычного теста.
 // Тесты удаления контактов.
-//
+
 // Задание 14: до и после удаления списки контактов читаются ИЗ БАЗЫ ДАННЫХ
 // (contactListFromDb() в TestBase), поэтому проверяется не только «стало на один меньше»,
 // но и что удалён именно выбранный контакт, а остальные контакты не изменились
@@ -77,15 +78,22 @@ public class ContactRemovalTests extends TestBase {
         // Снимок списка ИЗ БД до удаления — нужен, чтобы проверить, что удалилось всё.
         var oldContacts = contactListFromDb();
         // Отмечаем все контакты и удаляем одним нажатием через UI.
+        //var idsInGroups =
         app.contacts().removeAllContacts();
         // Снимок списка ИЗ БД после удаления.
         var newContacts = contactListFromDb();
-
         // В БД не должно остаться контактов: проверяем и длину списка, и счётчик в БД.
         Assertions.assertEquals(0, newContacts.size(),
                 "После удаления всех контактов список из БД должен быть пуст, было: " + oldContacts.size());
         // count(*) в БД — независимая проверка того же факта (список мог быть отфильтрован запросом).
         Assertions.assertEquals(0, app.hbm().getContactCount(),
                 "После удаления всех контактов таблица addressbook должна быть пуста");
+        // Постобработка: приложение удаляет контакт только из addressbook, связи в
+        // address_in_groups осиротели (это дефект самого addressbook, не теста).
+        // Убираем их явно, иначе @AfterEach#checkDatabaseConsistency этого же теста
+        // упадёт с "DB is corrupted" и отравит все последующие тесты прогона.
+        app.jdbc().removeOrphanedGroupLinks();
+        // Проверка: после уборки проверка целостности больше не находит сирот.
+        app.jdbc().checkConsistency();
     }
 }

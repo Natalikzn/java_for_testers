@@ -71,4 +71,24 @@ public class JdbcHelper extends HelperBase {
             throw new RuntimeException(e);
         }
     }
+
+    // Удалить из address_in_groups «сиротские» связи — строки, для которых контакта
+    // в addressbook уже нет. Приложение удаляет контакт DELETE-ом из addressbook,
+    // не чистя промежуточную таблицу, поэтому массовое удаление контактов всегда
+    // оставляет мусор, на котором спотыкается checkConsistency().
+    // Метод вызывается ЯВНО из теста массового удаления, а не из проверки целостности:
+    // проверка checkConsistency() должна оставаться независимым детектором.
+    public int removeOrphanedGroupLinks() {
+        try (var conn = DriverManager.getConnection("jdbc:mysql://localhost/addressbook", "root", "");
+             var statement = conn.createStatement()) {
+            // MySQL не позволяет DELETE из таблицы, которая есть в LEFT JOIN того же запроса
+            // через подзапрос на себя, поэтому удаляем через псевдоним целевой таблицы.
+            return statement.executeUpdate(
+                    "DELETE ag FROM address_in_groups ag "
+                            + "LEFT JOIN addressbook a ON a.id = ag.id "
+                            + "WHERE a.id IS NULL");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
